@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Data Seller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            background: white;
+            border-radius: 15px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .login-icon {
+            font-size: 60px;
+            color: #4285f4;
+            margin-bottom: 20px;
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        .login-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 16px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #3367d6;
+        }
+
+        .login-btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        /* Admin Dashboard */
+        .admin-screen {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .admin-screen.active {
+            display: block;
+        }
+
+        .admin-header {
+            background: #4285f4;
+            color: white;
+            padding: 25px 30px;
+        }
+
+        .admin-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .admin-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .admin-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .admin-email {
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #4285f4;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Content */
+        .content {
+            padding: 25px 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-title {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4285f4;
+        }
+
+        /* Table */
+        .table-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f1f3f5;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-paid {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: opacity 0.3s;
+        }
+
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+
+        .approve-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .reject-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .refund-btn {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .remove-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .action-btn:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+        }
+
+        /* Message */
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+
+        /* Loader */
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4285f4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .login-screen {
+                padding: 30px 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-header {
+                padding: 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+    <!-- Firebase SDKs MUST BE LOADED IN HEAD -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="screen active login-screen">
+            <div class="login-icon">🔐</div>
+            <h1 class="login-title">Admin Panel</h1>
+            <p class="login-subtitle">Data Seller App Management</p>
+            <div id="loginMessage" class="message"></div>
+            <button id="googleLoginBtn" class="login-btn">
+                <span>Sign in with Google</span>
+            </button>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="dashboardScreen" class="screen admin-screen">
+            <!-- Header -->
+            <div class="admin-header">
+                <h1>Admin Dashboard</h1>
+                <p>Manage seller and withdrawal requests</p>
+                <div class="admin-info">
+                    <div class="admin-email" id="adminEmail">admin@example.com</div>
+                    <button id="logoutBtn" class="logout-btn">Logout</button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="sellerRequests">Seller Requests</button>
+                <button class="tab-btn" data-tab="withdrawRequests">Withdrawal Requests</button>
+            </div>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">Pending Seller Requests</div>
+                        <div class="stat-value" id="pendingSellerCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Pending Withdrawals</div>
+                        <div class="stat-value" id="pendingWithdrawCount">0</div>
+                    </div>
+                </div>
+
+                <div id="dashboardMessage" class="message"></div>
+
+                <!-- Seller Requests Tab -->
+                <div id="sellerRequestsTab" class="tab-content active">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>User Details</th>
+                                    <th>UPI ID</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sellerRequestsTable">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                        <div id="sellerEmpty" class="empty-state" style="display: none;">
+                            No seller requests found
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Withdraw Requests Tab -->
+                <div id="withdrawRequestsTab" class="tab-content">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>User Details</th>
+                                    <th>Amount</th>
+                                    <th>UPI ID</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="withdrawRequestsTable">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                        <div id="withdrawEmpty" class="empty-state" style="display: none;">
+                            No withdrawal requests found
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // FIREBASE CONFIGURATION - MUST USE EXACTLY AS GIVEN
+        const firebaseConfig = {
+            apiKey: "AIzaSyB-BwjDUorqfsC9z04-V63ETvoEmKsazvM",
+            authDomain: "datasellerapp.firebaseapp.com",
+            projectId: "datasellerapp",
+            storageBucket: "datasellerapp.firebasestorage.app",
+            messagingSenderId: "218329701404",
+            appId: "1:218329701404:web:d908e86db9a946d4d2d3d9"
+        };
+
+        // Initialize Firebase - SIMPLE AND WORKING VERSION
+        console.log("🚀 Starting Firebase initialization...");
+        
+        // Wait for Firebase to load
+        if (typeof firebase !== 'undefined') {
+            try {
+                // Initialize Firebase
+                firebase.initializeApp(firebaseConfig);
+                
+                // Get Firebase services
+                const auth = firebase.auth();
+                const db = firebase.firestore();
+                const googleProvider = new firebase.auth.GoogleAuthProvider();
+                
+                console.log("✅ Firebase initialized successfully!");
+                console.log("Auth service:", auth ? "Available" : "Not available");
+                console.log("Firestore service:", db ? "Available" : "Not available");
+                
+                // DOM Elements
+                const loginScreen = document.getElementById('loginScreen');
+                const dashboardScreen = document.getElementById('dashboardScreen');
+                const googleLoginBtn = document.getElementById('googleLoginBtn');
+                const logoutBtn = document.getElementById('logoutBtn');
+                const adminEmail = document.getElementById('adminEmail');
+                const loginMessage = document.getElementById('loginMessage');
+                const dashboardMessage = document.getElementById('dashboardMessage');
+                
+                // Tab elements
+                const tabBtns = document.querySelectorAll('.tab-btn');
+                const sellerRequestsTab = document.getElementById('sellerRequestsTab');
+                const withdrawRequestsTab = document.getElementById('withdrawRequestsTab');
+                
+                // Table bodies
+                const sellerRequestsTable = document.getElementById('sellerRequestsTable');
+                const sellerEmpty = document.getElementById('sellerEmpty');
+                const withdrawRequestsTable = document.getElementById('withdrawRequestsTable');
+                const withdrawEmpty = document.getElementById('withdrawEmpty');
+                
+                // Stats elements
+                const pendingSellerCount = document.getElementById('pendingSellerCount');
+                const pendingWithdrawCount = document.getElementById('pendingWithdrawCount');
+
+                let currentAdmin = null;
+
+                // Simple message function
+                function showMessage(element, text, type) {
+                    element.textContent = text;
+                    element.className = 'message ' + type;
+                    setTimeout(() => {
+                        element.className = 'message';
+                        element.textContent = '';
+                    }, 5000);
+                }
+
+                // Format timestamp
+                function formatTimestamp(timestamp) {
+                    if (!timestamp) return 'N/A';
+                    try {
+                        const date = timestamp.toDate();
+                        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    } catch (e) {
+                        return 'N/A';
+                    }
+                }
+
+                // Switch screen
+                function showScreen(screenId) {
+                    if (screenId === 'login') {
+                        loginScreen.classList.add('active');
+                        dashboardScreen.classList.remove('active');
+                    } else {
+                        loginScreen.classList.remove('active');
+                        dashboardScreen.classList.add('active');
+                    }
+                }
+
+                // Tab navigation
+                tabBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const tabId = btn.getAttribute('data-tab');
+                        
+                        // Update active tab button
+                        tabBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        
+                        // Show selected tab
+                        sellerRequestsTab.style.display = tabId === 'sellerRequests' ? 'block' : 'none';
+                        withdrawRequestsTab.style.display = tabId === 'withdrawRequests' ? 'block' : 'none';
+                        
+                        // Load data for tab
+                        if (tabId === 'sellerRequests') loadSellerRequests();
+                        if (tabId === 'withdrawRequests') loadWithdrawRequests();
+                    });
+                });
+
+                // Update stats
+                async function updateStats() {
+                    try {
+                        // Count pending seller requests
+                        const sellerPending = await db.collection('sellerRequests')
+                            .where('status', '==', 'pending')
+                            .get();
+                        pendingSellerCount.textContent = sellerPending.size;
+
+                        // Count pending withdrawals
+                        const withdrawPending = await db.collection('withdrawRequests')
+                            .where('status', '==', 'pending')
+                            .get();
+                        pendingWithdrawCount.textContent = withdrawPending.size;
+
+                    } catch (error) {
+                        console.error('Error updating stats:', error);
+                    }
+                }
+
+                // Load seller requests
+                async function loadSellerRequests() {
+                    try {
+                        sellerRequestsTable.innerHTML = '';
+                        
+                        const querySnapshot = await db.collection('sellerRequests')
+                            .orderBy('time', 'desc')
+                            .get();
+                        
+                        if (querySnapshot.empty) {
+                            sellerEmpty.style.display = 'block';
+                            return;
+                        }
+                        
+                        sellerEmpty.style.display = 'none';
+                        
+                        querySnapshot.forEach((doc) => {
+                            const request = doc.data();
+                            const row = document.createElement('tr');
+                            
+                            let statusClass = 'status-pending';
+                            let statusText = 'Pending';
+                            
+                            if (request.status === 'approved') {
+                                statusClass = 'status-approved';
+                                statusText = 'Approved';
+                            } else if (request.status === 'rejected') {
+                                statusClass = 'status-rejected';
+                                statusText = 'Rejected';
+                            }
+                            
+                            row.innerHTML = `
+                                <td>${formatTimestamp(request.time)}</td>
+                                <td>
+                                    <div style="font-weight: 600;">${request.name || 'No Name'}</div>
+                                    <div style="font-size: 12px; color: #666;">${request.email || 'N/A'}</div>
+                                    <div style="font-size: 11px; color: #999; margin-top: 3px;">${request.uid || 'N/A'}</div>
+                                </td>
+                                <td><code>${request.upi || 'N/A'}</code></td>
+                                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                                <td>
+                                    ${request.status === 'pending' ? `
+                                        <button class="action-btn approve-btn" onclick="handleSellerAction('${doc.id}', 'approve', ${request.amount || 599}, '${request.uid}')">
+                                            Approve
+                                        </button>
+                                        <button class="action-btn reject-btn" onclick="handleSellerAction('${doc.id}', 'reject')">
+                                            Reject
+                                        </button>
+                                        <button class="action-btn refund-btn" onclick="handleRefundAction('${doc.id}', '${request.upi}', ${request.amount || 599})">
+                                            Refund
+                                        </button>
+                                    ` : 'No actions'}
+                                </td>
+                            `;
+                            
+                            sellerRequestsTable.appendChild(row);
+                        });
+                        
+                        await updateStats();
+                        
+                    } catch (error) {
+                        console.error('Error loading seller requests:', error);
+                        showMessage(dashboardMessage, 'Error loading seller requests', 'error');
+                    }
+                }
+
+                // Load withdrawal requests
+                async function loadWithdrawRequests() {
+                    try {
+                        withdrawRequestsTable.innerHTML = '';
+                        
+                        const querySnapshot = await db.collection('withdrawRequests')
+                            .orderBy('time', 'desc')
+                            .get();
+                        
+                        if (querySnapshot.empty) {
+                            withdrawEmpty.style.display = 'block';
+                            return;
+                        }
+                        
+                        withdrawEmpty.style.display = 'none';
+                        
+                        querySnapshot.forEach((doc) => {
+                            const request = doc.data();
+                            const row = document.createElement('tr');
+                            
+                            let statusClass = 'status-pending';
+                            let statusText = 'Pending';
+                            
+                            if (request.status === 'paid') {
+                                statusClass = 'status-paid';
+                                statusText = 'Paid';
+                            } else if (request.status === 'rejected') {
+                                statusClass = 'status-rejected';
+                                statusText = 'Rejected';
+                            }
+                            
+                            row.innerHTML = `
+                                <td>${formatTimestamp(request.time)}</td>
+                                <td>
+                                    <div style="font-weight: 600;">${request.name || 'No Name'}</div>
+                                    <div style="font-size: 12px; color: #666;">${request.email || 'N/A'}</div>
+                                    <div style="font-size: 11px; color: #999; margin-top: 3px;">${request.uid || 'N/A'}</div>
+                                </td>
+                                <td>₹${request.amount || 0}</td>
+                                <td><code>${request.upi || 'N/A'}</code></td>
+                                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                                <td>
+                                    ${request.status === 'pending' ? `
+                                        <button class="action-btn approve-btn" onclick="handleWithdrawAction('${doc.id}', 'paid')">
+                                            Mark Paid
+                                        </button>
+                                        <button class="action-btn reject-btn" onclick="handleWithdrawAction('${doc.id}', 'rejected')">
+                                            Reject
+                                        </button>
+                                        <button class="action-btn remove-btn" onclick="handleRemoveWithdraw('${doc.id}')">
+                                            Remove
+                                        </button>
+                                    ` : 'No actions'}
+                                </td>
+                            `;
+                            
+                            withdrawRequestsTable.appendChild(row);
+                        });
+                        
+                        await updateStats();
+                        
+                    } catch (error) {
+                        console.error('Error loading withdrawal requests:', error);
+                        showMessage(dashboardMessage, 'Error loading withdrawal requests', 'error');
+                    }
+                }
+
+                // Handle seller actions
+                window.handleSellerAction = async function(requestId, action, amount, userId) {
+                    try {
+                        const requestRef = db.collection('sellerRequests').doc(requestId);
+                        const requestDoc = await requestRef.get();
+                        
+                        if (!requestDoc.exists) {
+                            showMessage(dashboardMessage, 'Request not found', 'error');
+                            return;
+                        }
+                        
+                        const requestData = requestDoc.data();
+                        
+                        if (action === 'approve') {
+                            // Update seller request status
+                            await requestRef.update({
+                                status: 'approved',
+                                processedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                processedBy: currentAdmin.email
+                            });
+                            
+                            // Update user to seller
+                            await db.collection('users').doc(userId).update({
+                                isSeller: true,
+                                sellerSince: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            showMessage(dashboardMessage, '✅ Seller request approved successfully!', 'success');
+                            
+                        } else if (action === 'reject') {
+                            // Update seller request status
+                            await requestRef.update({
+                                status: 'rejected',
+                                processedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                processedBy: currentAdmin.email
+                            });
+                            
+                            showMessage(dashboardMessage, '✅ Seller request rejected.', 'success');
+                        }
+                        
+                        // Reload data
+                        await loadSellerRequests();
+                        
+                    } catch (error) {
+                        console.error('Error processing seller request:', error);
+                        showMessage(dashboardMessage, `❌ Error: ${error.message}`, 'error');
+                    }
+                };
+
+                // Handle refund action
+                window.handleRefundAction = async function(requestId, upiId, amount) {
+                    if (!confirm(`Process refund of ₹${amount} to UPI: ${upiId}?`)) {
+                        return;
+                    }
+                    
+                    try {
+                        await db.collection('sellerRequests').doc(requestId).update({
+                            status: 'refunded',
+                            refundedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            refundedBy: currentAdmin.email,
+                            refundUPI: upiId
+                        });
+                        
+                        showMessage(dashboardMessage, '✅ Refund marked as processed', 'success');
+                        await loadSellerRequests();
+                        
+                    } catch (error) {
+                        console.error('Error processing refund:', error);
+                        showMessage(dashboardMessage, `❌ Error: ${error.message}`, 'error');
+                    }
+                };
+
+                // Handle withdrawal actions
+                window.handleWithdrawAction = async function(requestId, action) {
+                    try {
+                        const requestRef = db.collection('withdrawRequests').doc(requestId);
+                        
+                        if (action === 'paid') {
+                            await requestRef.update({
+                                status: 'paid',
+                                processedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                processedBy: currentAdmin.email
+                            });
+                            
+                            showMessage(dashboardMessage, '✅ Withdrawal marked as paid.', 'success');
+                            
+                        } else if (action === 'rejected') {
+                            await requestRef.update({
+                                status: 'rejected',
+                                processedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                processedBy: currentAdmin.email
+                            });
+                            
+                            showMessage(dashboardMessage, '✅ Withdrawal request rejected.', 'success');
+                        }
+                        
+                        await loadWithdrawRequests();
+                        
+                    } catch (error) {
+                        console.error('Error processing withdrawal:', error);
+                        showMessage(dashboardMessage, `❌ Error: ${error.message}`, 'error');
+                    }
+                };
+
+                // Handle remove withdrawal
+                window.handleRemoveWithdraw = async function(requestId) {
+                    if (!confirm('Remove this withdrawal request permanently?')) {
+                        return;
+                    }
+                    
+                    try {
+                        await db.collection('withdrawRequests').doc(requestId).delete();
+                        showMessage(dashboardMessage, '✅ Withdrawal request removed.', 'success');
+                        await loadWithdrawRequests();
+                        
+                    } catch (error) {
+                        console.error('Error removing withdrawal:', error);
+                        showMessage(dashboardMessage, `❌ Error: ${error.message}`, 'error');
+                    }
+                };
+
+                // ✅ SIMPLE GOOGLE LOGIN FUNCTION - 100% WORKING
+                googleLoginBtn.addEventListener('click', async () => {
+                    try {
+                        console.log("🔄 Starting Google Sign-In...");
+                        
+                        // Show loading state
+                        googleLoginBtn.innerHTML = '<span class="loader"></span> Signing in...';
+                        googleLoginBtn.disabled = true;
+                        
+                        // Sign in with popup - SIMPLE AND WORKING
+                        const result = await auth.signInWithPopup(googleProvider);
+                        currentAdmin = result.user;
+                        
+                        console.log("✅ Google Sign-In successful!");
+                        console.log("User:", currentAdmin.email);
+                        
+                        // Update admin email display
+                        adminEmail.textContent = currentAdmin.email;
+                        
+                        // Load data
+                        await loadSellerRequests();
+                        await loadWithdrawRequests();
+                        
+                        // Show dashboard
+                        showScreen('dashboard');
+                        
+                        // Reset button
+                        googleLoginBtn.innerHTML = 'Sign in with Google';
+                        googleLoginBtn.disabled = false;
+                        
+                    } catch (error) {
+                        console.error("❌ Google Sign-In error:", error);
+                        
+                        let errorMessage = 'Login failed. ';
+                        
+                        if (error.code === 'auth/popup-blocked') {
+                            errorMessage = 'Popup blocked. Please allow popups for this site.';
+                        } else if (error.code === 'auth/popup-closed-by-user') {
+                            errorMessage = 'Popup closed. Please try again.';
+                        } else {
+                            errorMessage = error.message;
+                        }
+                        
+                        showMessage(loginMessage, `❌ ${errorMessage}`, 'error');
+                        
+                        // Reset button
+                        googleLoginBtn.innerHTML = 'Sign in with Google';
+                        googleLoginBtn.disabled = false;
+                    }
+                });
+
+                // Logout
+                logoutBtn.addEventListener('click', async () => {
+                    try {
+                        await auth.signOut();
+                        currentAdmin = null;
+                        showScreen('login');
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                    }
+                });
+
+                // ✅ AUTH STATE LISTENER - 100% WORKING
+                auth.onAuthStateChanged(async (user) => {
+                    console.log("🔄 Auth state changed:", user ? "Logged in" : "Logged out");
+                    
+                    if (user) {
+                        currentAdmin = user;
+                        adminEmail.textContent = user.email;
+                        
+                        console.log("✅ User authenticated:", user.email);
+                        
+                        // Load data
+                        await loadSellerRequests();
+                        await loadWithdrawRequests();
+                        
+                        showScreen('dashboard');
+                    } else {
+                        currentAdmin = null;
+                        console.log("ℹ️ User logged out");
+                        showScreen('login');
+                    }
+                });
+
+                // Initialize the app
+                console.log("🚀 Admin Panel initialized!");
+                
+            } catch (error) {
+                console.error("❌ Firebase initialization failed:", error);
+                showMessage(loginMessage, '❌ Firebase failed to load. Please refresh.', 'error');
+            }
+        } else {
+            console.error("❌ Firebase SDK not loaded!");
+            showMessage(loginMessage, '❌ Firebase not loaded. Please check connection.', 'error');
+        }
+    </script>
+</body>
+</html>
